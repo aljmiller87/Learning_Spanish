@@ -1,15 +1,19 @@
 const express = require('express');
 const passport = require('passport');
+const mongoose = require('mongoose');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
+const User = require('./models');
+
+const HOST = process.env.HOST;
+const PORT = process.env.PORT || 8080;
+
 
 const config = require('./config');
 const secret = require('./secret');
 
 const app = express();
 
-const database = {
-};
 
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', config.CLIENT_ROOT);
@@ -21,33 +25,77 @@ app.use(passport.initialize());
 
 passport.use(
     new GoogleStrategy({
-        clientID:  '689026946763-rtsrhg52nra9oai4tk7gb05fs8f1t43l.apps.googleusercontent.com',
+        clientID:  '586076467304-6uua98ggril15fvn69ge4pbl04c2uhkq.apps.googleusercontent.com',
         clientSecret: secret,
         callbackURL: `${config.ROOT}/auth/google/callback`
     },
     (accessToken, refreshToken, profile, cb) => {
+
+        // console.log("profile", profile);
+        // console.log("accessToken", accessToken);
+        // console.log("refreshToken", refreshToken);
+        // console.log("USER", User);
         // Job 1: Set up Mongo/Mongoose, create a User model which store the
         // google id, and the access token
         // Job 2: Update this callback to either update or create the user
         // so it contains the correct access token
-        const user = database[accessToken] = {
-            googleId: profile.id,
-            accessToken: accessToken
-        };
-        return cb(null, user);
+        User.findOne({ googleId: profile.id })
+            .exec()
+            .then(user => {
+                console.log("profile.id and accessToken", profile.id, accessToken);
+                if (!user) {
+                    console.log("testing create");
+                    return User.create({
+                        name: profile.displayName,
+                        googleId: profile.id,
+                        accessToken: accessToken
+                    })
+                } 
+                return user;
+                
+            })
+            .then(user => {
+                if( accessToken !== user.accessToken) {
+                    return User
+                        .findByIdAndUpdate(user._id, {$set: {accessToken:accessToken}}, {new: true})
+                        .exec()
+                }
+                return user;
+
+            })
+            .then(user => {
+                console.log("USER", user);
+                return cb(null, user);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+
+        
+        
     }
 ));
 
 passport.use(
     new BearerStrategy(
         (token, done) => {
+            console.log("TOKEN IS HERE",token);
+            console.log("DONE");
             // Job 3: Update this callback to try to find a user with a 
             // matching access token.  If they exist, let em in, if not,
             // don't.
-            if (!(token in database)) {
-                return done(null, false);
+            User.find({accessToken: token}, function(err, user){
+                console.log('Token from OAuth',token);
+                if(!user.length){
+                    console.log("SEARCH FAILED");
+                    return done(null, false);
+                }
+                else {
+                    console.log("SEARCH SUCCEEDED");
+                    return done(null, User.findOne({ 'accessToken': token }));
             }
-            return done(null, database[token]);
+            })
+            
         }
     )
 );
@@ -57,7 +105,8 @@ app.get('/auth/google',
 
 app.get('/auth/google/callback',
     passport.authenticate('google', {
-        failureRedirect: `${config.CLIENT_ROOT}`,
+        // failureRedirect: `${config.CLIENT_ROOT}`,
+        failureRedirect: '/login',
         session: false
     }),
     (req, res) => {
@@ -72,9 +121,15 @@ app.get('/auth/logout', (req, res) => {
     res.redirect('/');
 });
 
+// app.get('/api/cookies', (req, res) => {
+//     console.log(req.cookies, 'req.cookies');
+//     res.send(200);
+// })
+
 app.get('/api/me',
     passport.authenticate('bearer', {session: false}),
     (req, res) => res.json({
+
         googleId: req.user.googleId
     })
 );
@@ -85,12 +140,22 @@ app.get('/api/questions',
 );
 
 let server;
-function runServer(host, port) {
+function runServer() {
     return new Promise((resolve, reject) => {
-        server = app.listen(port, host, () => {
-            console.log(`Server running on ${host}:${port}`);
-            resolve();
-        }).on('error', reject);
+        mongoose.connect('mongodb://localhost/SpacedRepetition', function(err){
+        if(err) {
+            return reject(err);
+        }
+        app.listen(PORT, HOST, (err) => {
+        if (err) {
+            console.error(err);
+            reject(err);
+        }
+        const host = HOST || 'localhost';
+        console.log(`Listening on ${host}:${PORT}`);
+     });
+   });
+        
     });
 }
 
