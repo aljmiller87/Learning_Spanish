@@ -3,13 +3,22 @@ import * as actions from '../actions/actions';
 import store from '../store';
 
 const initialState = {
-	question:"What is Hello is Spanish?",
-	options:["HALO", "HULU", "HOLA"],
-	answer:"HOLA"
+	question: "",
+	options:[]
 };
 
-export default function mainReducer (state = initialState, action) {
-	
+export function mainReducer (state = initialState, action) {
+	if (action.type === 'FIRST_QUESTION') {
+		let currentQuestion = action.question.question;
+		let currentOptions = action.question.options;
+		setTimeout(()=> { console.log(store.getState(), "GETSTATE")}, 2000);
+		return update(state, {
+			question: {$set: currentQuestion},
+			options: {$set: [currentOptions]}
+		})
+	}
+
 		
-		return initialState;
-		}
+	return state;
+		
+}

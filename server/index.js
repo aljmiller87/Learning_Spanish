@@ -18,6 +18,7 @@ const secret = require('./secret');
 
 const app = express();
 app.use(cookieParser());
+mongoose.Promise = global.Promise;
 
 
 app.use(function(req, res, next) {
@@ -149,18 +150,27 @@ app.put('/loadquestions', jsonParser, (req, res) => {
     .then(questions => {
         console.log("Questions", questions);
         console.log("Cookie", cookie);
-        User.findOneAndUpdate({accessToken: cookie}, {$set:{questionsArray: questions}}, {new: true}, function(err, doc){
-            if(err){
-                console.log("Something wrong when updating data!");
-            }
-                console.log(doc);
+        User.findOneAndUpdate({accessToken: cookie}, {$set:{questionsArray: questions}}, {new: true})  
+        .exec()
+        .then(_res => {
+            let firstQuestion = _res.questionsArray[0];
+        console.log("Is this first question?", firstQuestion);
+        return res.status(202).json(firstQuestion);
         })
+    
     })
-    .then(_res => {
-        _res = res;
-        console.log("testing testing 123");
-        return res.status(200).json({});
-    })  
+});
+
+app.get('/firstquestion', jsonParser, (req, res) => {
+    let cookie = (req.cookies['accessToken']);
+    User
+        .findOne({accessToken: cookie})
+        .lean()
+        .exec((err, user) => {
+            let currentQuestion = user.questionsArray[0];
+            console.log("currentQuestion", currentQuestion);
+            res.json(currentQuestion);
+        })     
 });
 
 app.put('/nextquestion', jsonParser, (req, res) => {

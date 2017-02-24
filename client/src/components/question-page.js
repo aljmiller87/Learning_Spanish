@@ -7,6 +7,10 @@ import {connect} from 'react-redux';
 export class QuestionPage extends React.Component {
     constructor(props) {
         super(props);
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.startQuiz = this.startQuiz.bind(this);
+        this.firstQuestion = this.firstQuestion.bind(this);
+        this.selectAnswer = this.selectAnswer.bind(this);
     }
 
 
@@ -28,6 +32,14 @@ export class QuestionPage extends React.Component {
         );
     }
 
+    startQuiz() {
+        this.props.dispatch(actions.asyncStartQuiz());
+    }
+
+    firstQuestion() {
+        this.props.dispatch(actions.asyncFirstQuestion());
+    }
+
     selectAnswer(id, props) {
         
         console.log("SELECT ANSWER CALLED")
@@ -44,29 +56,25 @@ export class QuestionPage extends React.Component {
 
     
     render() {
-            <div> <li >{this.props.question}</li>
-            
-            
-            <div value="1" id="1" onClick={() => this.selectAnswer("1")}>Work?</div>
-                <br/>
-            <div value="two" id="2" onClick={() => this.selectAnswer("2")}> right</div>
-                <br/>
-            <div value="three" id="3" onClick={() => this.selectAnswer("3")}>here</div>
-            </div>
+      
         
 
         return (
-            <ul className="question-list">
-            <div> <li >{this.props.question}</li>
-            
-            
-            <div value="1" id="1" onClick={() => this.selectAnswer("1")}>Work?</div>
-                <br/>
-            <div value="two" id="2" onClick={() => this.selectAnswer("2")}> right</div>
-                <br/>
-            <div value="three" id="3" onClick={() => this.selectAnswer("3")}>here</div>
-            </div>
-            </ul>
+            <div>
+                <div onClick={this.startQuiz}>Click to start your quiz</div>
+                <div onClick={this.firstQuestion}>Click to get first question</div>
+                <ul className="question-list">
+                <div> <li >{this.props.question}</li>
+                
+                
+                <div value="1" id="1" onClick={() => this.selectAnswer("1")}>Work?</div>
+                    <br/>
+                <div value="two" id="2" onClick={() => this.selectAnswer("2")}> right</div>
+                    <br/>
+                <div value="three" id="3" onClick={() => this.selectAnswer("3")}>here</div>
+                </div>
+                </ul>
+                </div>
         );
     }
 }
