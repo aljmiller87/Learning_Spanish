@@ -11,7 +11,32 @@ class App extends React.Component {
         this.state = {
             currentUser: null
         };
+
+        this.checkAnswer = this.checkAnswer.bind(this);
+        this.getnextQuestion = this.getnextQuestion.bind(this);
     }
+
+    checkAnswer(event, props) {
+        event.preventDefault();
+
+        if( selectedAnswer === props.answer) {
+
+
+        }
+        //check value of input from the answer to the current questions answer stored in the state
+        // if (INPUT === STATE.ANSWER OR PROPS.ANSWER) DISPATCH AN ACTION TO ADD TO THE CORRECT 
+        //AND THEN SWITCH TO THE NEXT QUESTION BY TRIGGERING AN ACTION
+
+    }
+
+    getnextQuestion(event, props) {
+        event.preventDefault();
+
+        this.props.dispatch(actions.getnextQuestion(1));
+
+
+    }
+
 
     componentDidMount() {
         // Job 4: Redux-ify all of the state and fetch calls to async actions.
@@ -45,8 +70,19 @@ class App extends React.Component {
             return <LoginPage />;
         }
 
-        return <QuestionPage />;
+        return <QuestionPage onClick={this.getnextQuestion} />;
     }
 }
 
-export default App;
+
+
+function mapStateToProps (state, props) {
+    return {
+
+        question:state.question,
+        options:state.options,
+        correctAnswer: state.correctAnswer
+    }
+
+}
+export default connect(mapStateToProps)(App);
