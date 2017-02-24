@@ -31,7 +31,7 @@ import axios from 'axios';
 
 export const asyncFirstQuestion = () => {
 	return dispatch => {
-		return fetch('/firstquestion')
+		return fetch('http://localhost:8080/firstquestion')
 		.then(res => {
 			console.log("First Question?", res.json());
 			return res.json();
