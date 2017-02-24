@@ -1,6 +1,7 @@
 import React from 'react';
-import * as Cookies from 'js-cookie';
 
+import * as Cookies from 'js-cookie';
+import {connect} from 'react-redux';
 import QuestionPage from './question-page';
 import LoginPage from './login-page';
 import {SERVER_ROOT} from '../config';
@@ -12,30 +13,30 @@ class App extends React.Component {
             currentUser: null
         };
 
-        this.checkAnswer = this.checkAnswer.bind(this);
-        this.getnextQuestion = this.getnextQuestion.bind(this);
+        // this.checkAnswer = this.checkAnswer.bind(this);
+        // this.getnextQuestion = this.getnextQuestion.bind(this);
     }
 
     checkAnswer(event, props) {
         event.preventDefault();
 
-        if( selectedAnswer === props.answer) {
+        // if( selectedAnswer === props.answer) {
 
 
-        }
+        // }
         //check value of input from the answer to the current questions answer stored in the state
         // if (INPUT === STATE.ANSWER OR PROPS.ANSWER) DISPATCH AN ACTION TO ADD TO THE CORRECT 
         //AND THEN SWITCH TO THE NEXT QUESTION BY TRIGGERING AN ACTION
 
     }
 
-    getnextQuestion(event, props) {
-        event.preventDefault();
+    // getnextQuestion(event, props) {
+    //     event.preventDefault();
 
-        this.props.dispatch(actions.getnextQuestion(1));
+    //     this.props.dispatch(actions.getnextQuestion(1));
 
 
-    }
+    // }
 
 
     componentDidMount() {

@@ -25,5 +25,4 @@ export function getNextQuestion(index) {
 			 
 		})
 	}
-
-	module.exports = {GOTNEXTQUESTION, getNextQuestion, gotNextQuestion};
+}
