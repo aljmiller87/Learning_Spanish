@@ -36,10 +36,6 @@ passport.use(
         callbackURL: `${config.ROOT}/auth/google/callback`
     },
     (accessToken, refreshToken, profile, cb) => {
-        // Job 1: Set up Mongo/Mongoose, create a User model which store the
-        // google id, and the access token
-        // Job 2: Update this callback to either update or create the user
-        // so it contains the correct access token
         User.findOne({ googleId: profile.id })
             // .exec()
             .then(user => {
@@ -83,9 +79,6 @@ passport.use(
         (token, done) => {
             console.log("TOKEN IS HERE",token);
             console.log("DONE");
-            // Job 3: Update this callback to try to find a user with a 
-            // matching access token.  If they exist, let em in, if not,
-            // don't.
             User.find({accessToken: token}, function(err, user){
                 console.log('Token from OAuth',token);
                 if(!user.length){
@@ -120,13 +113,8 @@ app.get('/auth/google/callback',
 app.get('/auth/logout', (req, res) => {
     req.logout();
     res.clearCookie('accessToken');
-    res.redirect('/');
+    res.redirect(`${config.CLIENT_ROOT}`);
 });
-
-// app.get('/api/cookies', (req, res) => {
-//     console.log(req.cookies, 'req.cookies');
-//     res.send(200);
-// })
 
 app.get('/api/me',
     passport.authenticate('bearer', {session: false}),
@@ -141,10 +129,8 @@ app.get('/api/questions',
     (req, res) => res.json(['Question 1', 'Question 2'])
 );
 
-
-app.put('/loadquestions', jsonParser, (req, res) => {
-    console.log("Testing loadquestions endpoint");
-    let cookie = (req.cookies['accessToken']);
+app.post('/loadspanishquestions', passport.authenticate('bearer', {session: false}), (req, res) => {
+    let cookie = req.user._conditions.accessToken;
     Questions.find({})
     .exec()
     .then(questions => {
@@ -153,44 +139,58 @@ app.put('/loadquestions', jsonParser, (req, res) => {
         User.findOneAndUpdate({accessToken: cookie}, {$set:{questionsArray: questions}}, {new: true})  
         .exec()
         .then(_res => {
-            let firstQuestion = _res.questionsArray[0];
-        console.log("Is this first question?", firstQuestion);
-        return res.status(202).json(firstQuestion);
+        //     let firstQuestion = _res.questionsArray[0];
+        // console.log("Is this first question?", firstQuestion);
+        return res.status(202).json(_res);
         })
     
     })
 });
 
-app.get('/firstquestion', jsonParser, (req, res) => {
-    let cookie = (req.cookies['accessToken']);
+app.get('/firstquestion', passport.authenticate('bearer', {session: false}), (req, res) => {
+    console.log('req.user', req.user._conditions.accessToken);
+    let cookie = req.user._conditions.accessToken;
+    console.log("Correct Cookie?", cookie);
     User
         .findOne({accessToken: cookie})
-        .lean()
-        .exec((err, user) => {
+        .exec()
+        .then(user => {
+            console.log("User response:",  user);
             let currentQuestion = user.questionsArray[0];
-            console.log("currentQuestion", currentQuestion);
-            res.json(currentQuestion);
+            let response = {
+                currentQuestion: currentQuestion,
+                correctCount: user.correctCount,
+                questionCount: user.questionCount
+            }
+            // console.log("currentQuestion", currentQuestion);
+            res.json(response);
+        })
+        .catch(err => {
+            console.log("ERROR", err);
         })     
 });
 
-app.put('/nextquestion', jsonParser, (req, res) => {
+app.post('/nextquestion/:answer', passport.authenticate('bearer', {session: false}), (req, res) => {
 
-    let answer = req.body.answer;
-    let cookie = (req.cookies['accessToken']);
-    console.log("answer from frontend: ", answer);
+    // let answer = req.body.answer;
+    let cookie = req.user._conditions.accessToken;
+    let temp = req.params.answer;
+    let answerGiven = parseInt(temp.substr(1));
+    console.log("answer before parseInt?", temp);
 
     User.findOne({accessToken: cookie})
     .exec()
     .then(user => {
+        // console.log("user on backend", user);
         user.questionCount++;
         let currentQuestion = user.questionsArray[0];
-        console.log("user.questionsArray[0]", currentQuestion);
-        console.log("M value visible?", currentQuestion.m);
-        console.log("still see answer? ", answer);
+        console.log("answer given typeof ", typeof(answerGiven));
+        console.log("correct answer type of", typeof(currentQuestion.answer));
+        console.log("boolean test", (answerGiven !== currentQuestion.answer));
 
         // Algorithm
 
-        if (answer !== currentQuestion.answer) {
+        if (answerGiven !== currentQuestion.answer) {
             console.log('wrong answer');
             if(currentQuestion.m > 1) {
                 currentQuestion.m = Math.floor(currentQuestion.m / 2);
@@ -205,7 +205,7 @@ app.put('/nextquestion', jsonParser, (req, res) => {
         }
         user.questionsArray.splice(0, 1);
         user.questionsArray.splice(currentQuestion.m, 0, currentQuestion);
-        console.log("user.questionsArray should update", user.questionsArray);
+        // console.log("user.questionsArray should update", user.questionsArray);
 
         user.save(function(err) {
             if (err) {
@@ -215,6 +215,9 @@ app.put('/nextquestion', jsonParser, (req, res) => {
                 user.questionCount, nextQuestion: user.questionsArray[0]});
             }
         })
+
+
+
         // console.log("user.questionsArray should be different ", newQArray);
         // let questionsArray = user.questionsArray;
         // let currentQuestion = questionsArray[0];

@@ -2,64 +2,114 @@ import thunk from 'redux-thunk';
 import store from '../store';
 import { ROOT, PORT } from '../../../server/config';
 import axios from 'axios';
+import * as Cookies from 'js-cookie';
 
-// export const GOTNEXTQUESTION = "GETTING_NEXT_QUESTION"
-// export function gotNextQuestion (question) {
-// 	return {
-// 		type:GOTNEXTQUESTION,
-// 		question:question.question,
-// 		options:question.options,
-// 		Answer:question.correctAnswer,
+export const QUIZ_ACTIVE = 'QUIZ_ACTIVE';
+export const quizActive = () => ({
+	type: QUIZ_ACTIVE,
+	quizActive: quizActive
+})
 
-// 	}
-// }
+export const INSTRUCTIONS_ACTIVE = 'INSTRUCTIONS_ACTIVE';
+export const instructionsActive = () => ({
+	type: INSTRUCTIONS_ACTIVE,
+	quizActive: instructionsActive
+})
 
-// //dispatch synchronous action when completed
-// export function getNextQuestion(index) {
-// 	return function(dispatch) {
-// 	const url = '/questions'+ index;
-
-// 	return fetch(url).then(response => {
-			
-// 			return response.json();
-// 		}).then(question => {
-// 			return dispatch(gotNextQuestion(question));
-			 
-// 		})
-// 	}
-// }
-
-export const asyncFirstQuestion = () => {
-	return dispatch => {
-		return fetch('http://localhost:8080/firstquestion')
+export const asyncFirstQuestion = () => (dispatch) => {
+	const accessToken = Cookies.get('accessToken')
+	// console.log('accessToken', accessToken);
+		fetch('http://localhost:8080/firstquestion', {
+			headers: {
+				'Authorization': `Bearer ${accessToken}`}
+		})
 		.then(res => {
-			console.log("First Question?", res.json());
+			if (!res.ok) {
+				if(res.status !== 401) {
+					// Clear and return to login page
+					Cookies.remove('accessToken');
+					return;
+				}
+				throw new Error(res.statusText);
+			}
+			// console.log("First Question?", res.json());
 			return res.json();
 		}).then(_res => {
+			console.log("_res", _res)
+			let newQuestion = {}
 			return dispatch(firstQuestion(_res));
 		}).catch(error => {
 			return error;
 		})
-	}
 }
 
+
 export const FIRST_QUESTION = 'FIRST_QUESTION';
-export const firstQuestion = (question) => ({
+export const firstQuestion = (response) => ({
 	type: FIRST_QUESTION,
-	question: question
+	response: response
+})
+
+export const asyncNextQuestion = (answer) => (dispatch) => {
+	console.log('answer', answer)
+	const accessToken = Cookies.get('accessToken')
+	// console.log('accessToken', accessToken);
+		fetch(`http://localhost:8080/nextquestion/:${answer}`, {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${accessToken}`,
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'}
+			// body: JSON.stringify({answer: 1})
+		})
+		.then(res => {
+			if (!res.ok) {
+				if(res.status !== 401) {
+					// Clear and return to login page
+					Cookies.remove('accessToken');
+					return;
+				}
+				throw new Error(res.statusText);
+			}
+			// console.log("First Question?", res.json());
+			return res.json();
+		}).then(_res => {
+			console.log("_res", _res)
+			let newQuestion = {}
+			return dispatch(nextQuestion(_res));
+		}).catch(error => {
+			return error;
+		})
+}
+
+export const NEXT_QUESTION = 'NEXT_QUESTION';
+export const nextQuestion = (response) => ({
+	type: NEXT_QUESTION,
+	response: response
 })
 
 export const asyncStartQuiz = () => dispatch => {
-	return fetch('/loadquestions')
+	const accessToken = Cookies.get('accessToken')
+	console.log("AccessToken found?", accessToken);
+	fetch('http://localhost:8080/loadspanishquestions', {
+		method: 'POST',
+		headers: {
+			'Authorization': `Bearer ${accessToken}`}
+	})
 	.then(res => {
 		if (!res.ok) {
+			if(res.status !== 401) {
+				// Clear and return to login page
+				Cookies.remove('accessToken');
+				return;
+			}
 			throw new Error(res.statusText);
-    	}
+		}
     	console.log("res?", res);
     	return res.json(); 
   	})
   	.then(_res => {
-  		console.log("First question?", _res);
+  		console.log("What is _res?", _res);
   		// dispatch(startQuiz(_res))
   	})
   	.catch(error => {
@@ -67,6 +117,3 @@ export const asyncStartQuiz = () => dispatch => {
   	})
 }
 
-export const startQuiz = (firstQuestionInfo) => ({
-
-})
