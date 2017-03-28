@@ -269,7 +269,7 @@ app.post('/nextquestion/:answer', passport.authenticate('bearer', {session: fals
 let server;
 function runServer() {
     return new Promise((resolve, reject) => {
-        mongoose.connect('mongodb://localhost/SpacedRepetition', function(err){
+        mongoose.connect('mongodb://user1:user1@ds143900.mlab.com:43900/spaced_rep', function(err){
         if(err) {
             return reject(err);
         }
