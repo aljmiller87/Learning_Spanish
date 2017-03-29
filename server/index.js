@@ -140,7 +140,7 @@ app.post('/loadspanishquestions', passport.authenticate('bearer', {session: fals
         .exec()
         .then(_res => {
         //     let firstQuestion = _res.questionsArray[0];
-        // console.log("Is this first question?", firstQuestion);
+        console.log("RES?", _res);
         return res.status(202).json(_res);
         })
     
