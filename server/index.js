@@ -6,6 +6,7 @@ const BearerStrategy = require('passport-http-bearer').Strategy;
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
+const path = require('path');
 
 const { User, Questions } = require('./models');
 
@@ -19,7 +20,6 @@ const secret = require('./secret');
 const app = express();
 app.use(cookieParser());
 mongoose.Promise = global.Promise;
-
 
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', config.CLIENT_ROOT);
@@ -94,6 +94,8 @@ passport.use(
         }
     )
 );
+
+app.use('/', express.static(path.join(__dirname, 'public')))
 
 app.get('/auth/google',
     passport.authenticate('google', {scope: ['profile']}));

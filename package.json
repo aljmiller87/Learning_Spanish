@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "run-p start:client start:server",
+    "dev": "run-p start:client start:server",
+    "start": "node server/index.js",
     "start:client": "cd client && npm start",
     "start:server": "cd server && npm start"
   },

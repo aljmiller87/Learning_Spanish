@@ -1,6 +1,6 @@
 import thunk from 'redux-thunk';
 import store from '../store';
-import { ROOT, PORT } from '../../../server/config';
+import { ROOT, PORT } from '../config';
 import axios from 'axios';
 import * as Cookies from 'js-cookie';
 
@@ -19,7 +19,7 @@ export const instructionsActive = () => ({
 export const asyncFirstQuestion = () => (dispatch) => {
 	const accessToken = Cookies.get('accessToken')
 	// console.log('accessToken', accessToken);
-		fetch('http://localhost:8080/firstquestion', {
+		fetch('/firstquestion', {
 			headers: {
 				'Authorization': `Bearer ${accessToken}`}
 		})
@@ -54,7 +54,7 @@ export const asyncNextQuestion = (answer) => (dispatch) => {
 	console.log('answer', answer)
 	const accessToken = Cookies.get('accessToken')
 	// console.log('accessToken', accessToken);
-		fetch(`http://localhost:8080/nextquestion/:${answer}`, {
+		fetch(`/nextquestion/:${answer}`, {
 			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${accessToken}`,
@@ -91,7 +91,7 @@ export const nextQuestion = (response) => ({
 export const asyncStartQuiz = () => dispatch => {
 	const accessToken = Cookies.get('accessToken')
 	console.log("AccessToken found?", accessToken);
-	fetch('http://localhost:8080/loadspanishquestions', {
+	fetch('/loadspanishquestions', {
 		method: 'POST',
 		headers: {
 			'Authorization': `Bearer ${accessToken}`}
