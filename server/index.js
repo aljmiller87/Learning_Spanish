@@ -107,14 +107,14 @@ app.get('/auth/google/callback',
     }),
     (req, res) => {
         res.cookie('accessToken', req.user.accessToken, {expires: 0});
-        res.redirect(`${config.CLIENT_ROOT}`);
+        res.redirect('/');
     }
 );
 
 app.get('/auth/logout', (req, res) => {
     req.logout();
     res.clearCookie('accessToken');
-    res.redirect(`${config.CLIENT_ROOT}`);
+    res.redirect('/');
 });
 
 app.get('/api/me',
