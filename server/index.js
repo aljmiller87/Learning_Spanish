@@ -27,7 +27,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(passport.initialize());
-
+console.log("config.ROOT", config.ROOT);
 passport.use(
     new GoogleStrategy({
         clientID:  '586076467304-6uua98ggril15fvn69ge4pbl04c2uhkq.apps.googleusercontent.com',
