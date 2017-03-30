@@ -1,5 +1,4 @@
 import React from 'react';
-import {SERVER_ROOT} from '../config';
 
 export default function LoginPage() {
     return (
@@ -15,7 +14,7 @@ export default function LoginPage() {
 			    	<div className="login-wrapper">
 			    		<h1 className="login"> Welcome!</h1>
 			    		<h3>Please log in with Google.</h3>
-			    		<a href={`${SERVER_ROOT}/auth/google`} className="btn-green btn">Log In</a>
+			    		<a href="/auth/google" className="btn-green btn">Log In</a>
 			    	</div>
 			    </div>
 			</div>
