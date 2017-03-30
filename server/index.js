@@ -15,7 +15,6 @@ const PORT = process.env.PORT || 8080;
 
 
 const config = require('./config');
-const secret = require('./secret');
 
 const app = express();
 app.use(cookieParser());
@@ -32,7 +31,7 @@ app.use(passport.initialize());
 passport.use(
     new GoogleStrategy({
         clientID:  '586076467304-6uua98ggril15fvn69ge4pbl04c2uhkq.apps.googleusercontent.com',
-        clientSecret: secret,
+        clientSecret: config.GOOGLE_AUTH,
         callbackURL: `${config.ROOT}/auth/google/callback`
     },
     (accessToken, refreshToken, profile, cb) => {

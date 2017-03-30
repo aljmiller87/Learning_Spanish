@@ -4,6 +4,7 @@ const ROOT = `http://${HOST}:${PORT}`;
 const CLIENT_HOST = process.env.CLIENT_HOST || 'localhost';
 const CLIENT_PORT = process.env.CLIENT_PORT || 3000;
 const CLIENT_ROOT = `http://${CLIENT_HOST}:${CLIENT_PORT}`;
+const GOOGLE_AUTH = process.env.GOOGLE_SECRET_DAVINCI;
 
 module.exports = {
     HOST,
@@ -11,6 +12,7 @@ module.exports = {
     ROOT,
     CLIENT_HOST,
     CLIENT_PORT,
-    CLIENT_ROOT
+    CLIENT_ROOT,
+    GOOGLE_AUTH
 };
 
